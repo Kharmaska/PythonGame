@@ -1,42 +1,36 @@
 """
-Initializing the player's position
+Game character class definition
 """
-x_pos = 0
-e_x_pos = 4
 
 
-def move():
+class GameCharacter:
     """
-    move
+    Class for our Game Characters
     """
-    global x_pos
-    x_pos += 1
+    speed = 5
+
+    def __init__(self, name, width, height, x_pos, y_pos):
+        self.name = name
+        self.width = width
+        self.height = height
+        self.x_pos = x_pos
+        self.y_pos = y_pos
+
+    def move(self, by_x_amount, by_y_amount):
+        """
+        Function to handle the characters movement
+        :param by_x_amount: left or right movement
+        :param by_y_amount: up or down movement
+        """
+        self.x_pos += by_x_amount
+        self.y_pos += by_y_amount
 
 
-move()
+character_0 = GameCharacter('char0', 50, 100, 100, 100)
+print(character_0.name,character_0.width)
+character_0.name = 'char1'
+print(character_0.name,character_0.width)
 
-
-def move_by(amount):
-    """
-    move by amount
-    """
-    global x_pos
-    x_pos += amount
-
-
-def check_for_collision():
-    """
-    Check for the collision between enemy and player
-    :return: True if collision happened
-    """
-    global x_pos
-    global e_x_pos
-    if x_pos == e_x_pos:
-        return True
-    else:
-        return False
-
-
-move_by(8)
-did_collide = check_for_collision()
-print(did_collide)
+character_0.move(50, -100)
+print(character_0.x_pos)
+print(character_0.y_pos)
