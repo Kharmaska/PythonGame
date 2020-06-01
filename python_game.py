@@ -17,10 +17,9 @@ BLACK_COLOR = (0, 0, 0)
 # Creation of the game clock to enable to refresh rate with the tickrate
 clock = pygame.time.Clock()
 
+
 class Game:
-
     TICK_RATE = 60
-
 
     # Initializer for the game class to set up width, height and title
     def __init__(self, title, width, height):
@@ -35,6 +34,9 @@ class Game:
         pygame.display.set_caption(title)
 
     def run_game_loop(self):
+        """
+        Main loop for the game to draw graphics per tick rate and also to quit game once game is over
+        """
         is_game_over = False
 
         # Main game loop, used to update all gameplay such as movements, checks and graphics
@@ -53,23 +55,39 @@ class Game:
             # Draws a circle on top of the game screen canvas (x, y, radius)
             # pygame.draw.circle(game_screen, BLACK_COLOR, (400, 300), 50)
 
-            #game_screen.blit(player_image, (375, 375))
+            # game_screen.blit(player_image, (375, 375))
 
             # Update all game graphics
             pygame.display.update()
             # Tick the clock  to update everything within the game
             clock.tick(self.TICK_RATE)
 
+
+class GameObject:
+    """
+    superclass to build all the game objects (player, enemy and treasure)
+    """
+
+    def __init__(self, image_path, x, y, width, height):
+        object_image = pygame.image.load(image_path)
+        # Scales the image up
+        self.image = pygame.transform.scale(object_image, (width, height))
+        self.x_pos = x
+        self.y_pos = y
+
+    def draw(self, background):
+        """
+        draws game objects on top of the game background
+        :param background:
+        """
+        background.blit(self.image, (self.x_pos, self.y_pos))
+
+
 pygame.init()
 
 new_game = Game(SCREEN_TITLE, SCREEN_WIDTH, SCREEN_HEIGHT)
 new_game.run_game_loop()
 
-
-
 # quits Pygame and the program
 pygame.quit()
 quit()
-
-# player_image = pygame.image.load('player.png')
-# player_image = pygame.transform.scale(player_image, (50,50))
