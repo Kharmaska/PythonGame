@@ -2,9 +2,6 @@
 This is where I am training on Pygame by creating a Frogger like game
 """
 
-# Start the game loop
-# Use game loop to render graphics
-
 import pygame
 
 # Size of the screen
@@ -14,18 +11,22 @@ SCREEN_HEIGHT = 800
 # Colors for the screen
 WHITE_COLOR = (255, 255, 255)
 BLACK_COLOR = (0, 0, 0)
-# Creation of the game clock to enable to refresh rate with the tickrate
+# Creation of the game clock to enable to refresh rate with the tick rate
 clock = pygame.time.Clock()
+
+pygame.font.init()
+font = pygame.font.SysFont('comicsans', 75)
 
 
 class Game:
     """
     Main loop of the game
     """
-    TICK_RATE = 60
+    # Refresh rate to 30 frames per sec as 60 is too fast for 144hz screens
+    TICK_RATE = 30
 
     # Initializer for the game class to set up width, height and title
-    def __init__(self, title, width, height):
+    def __init__(self, image_path, title, width, height):
         self.title = title
         self.width = width
         self.height = height
@@ -36,15 +37,32 @@ class Game:
         self.game_screen.fill(WHITE_COLOR)
         pygame.display.set_caption(title)
 
-    def run_game_loop(self):
+        background_image = pygame.image.load(image_path)
+        self.image = pygame.transform.scale(background_image, (width, height))
+
+    def run_game_loop(self, level_speed):
         """
-        Main loop for the game to draw graphics per tick rate and also to quit game once game is over
+        Main loop for the game to draw graphics per tick rate
+        and also to quit game once game is over
         """
         is_game_over = False
+        did_win = False
         direction = 0
 
         player_character = PlayerCharacter('player.png', 375, 700, 50, 50)
-        enemy_0 = EnemyCharacter('enemy.png', 20, 400, 50, 50)
+        enemy_0 = EnemyCharacter('enemy.png', 20, 600, 40, 40)
+        enemy_0.SPEED += level_speed + 1
+
+        enemy_1 = EnemyCharacter('enemy.png', self.width - 40, 450, 40, 40)
+        enemy_1.SPEED += level_speed + 2
+
+        enemy_2 = EnemyCharacter('enemy.png', 20, 300, 40, 40)
+        enemy_2.SPEED += level_speed + 3
+
+        enemy_3 = EnemyCharacter('enemy.png', 20, 150, 40, 40)
+        enemy_3.SPEED += level_speed + 5
+
+        treasure = GameObject('treasure.png', 375, 50, 40, 40)
 
         # Main game loop, used to update all gameplay such as movements, checks and graphics
         # Runs until is_game_over = True
@@ -65,16 +83,58 @@ class Game:
                         direction = 0
                 print(event)
 
+            # Redraws the screen to a blank white window
             self.game_screen.fill(WHITE_COLOR)
-            player_character.move(direction)
+            self.game_screen.blit(self.image, (0, 0))
+
+            # Draws the treasure
+            treasure.draw(self.game_screen)
+
+            # Updates the player position
+            player_character.move(direction, self.height)
+            # Draws the player at the new position
             player_character.draw(self.game_screen)
 
+            # Same logic as above but with the enemy
             enemy_0.move(self.width)
             enemy_0.draw(self.game_screen)
+
+            if level_speed > 3:
+                enemy_1.move(self.width)
+                enemy_1.draw(self.game_screen)
+            if level_speed > 6:
+                enemy_2.move(self.width)
+                enemy_2.draw(self.game_screen)
+            if level_speed > 10:
+                enemy_3.move(self.width)
+                enemy_3.draw(self.game_screen)
+
+            # End game if collision between enemy or treasure
+            if player_character.detect_collision(enemy_0):
+                is_game_over = True
+                did_win = False
+                text = font.render('You lose! :(', True, BLACK_COLOR)
+                self.game_screen.blit(text, (300, 500))
+                pygame.display.update()
+                clock.tick(1)
+                break
+            elif player_character.detect_collision(treasure):
+                is_game_over = True
+                did_win = True
+                text = font.render('You win! :D', True, BLACK_COLOR)
+                self.game_screen.blit(text, (300, 500))
+                pygame.display.update()
+                clock.tick(1)
+                break
+
             # Update all game graphics
             pygame.display.update()
             # Tick the clock  to update everything within the game
             clock.tick(self.TICK_RATE)
+        if did_win:
+            self.run_game_loop(level_speed + 1)
+        else:
+            return
 
 
 class GameObject:
@@ -120,8 +180,26 @@ class PlayerCharacter(GameObject):
         elif direction < 0:
             self.y_pos += self.SPEED
 
-        if self.y_pos >= max_height - 20:
-            self.y_pos = max_height - 20
+        if self.y_pos >= max_height - 40:
+            self.y_pos = max_height - 40
+
+    def detect_collision(self, other_sprite):
+        """
+        Method to handle collisions
+        :param other_sprite: any other object like an enemy or the treasyre
+        :return: boolean to tell we are colliding or not
+        """
+
+        # collision detection in case enemy is above or below player position
+        if self.y_pos > other_sprite.y_pos + other_sprite.height or \
+                self.y_pos + self.height < other_sprite.y_pos:
+            return False
+        # collision detection in case enemy at the same Y but left or right of the
+        # player's position
+        if self.x_pos > other_sprite.x_pos + other_sprite.width or \
+                self.x_pos + self.width < other_sprite.x_pos:
+            return False
+        return True
 
 
 class EnemyCharacter(GameObject):
@@ -141,14 +219,15 @@ class EnemyCharacter(GameObject):
         """
         if self.x_pos <= 20:
             self.SPEED = abs(self.SPEED)
-        elif self.x_pos >= max_width - 20:
+        elif self.x_pos >= max_width - 40:
             self.SPEED = -abs(self.SPEED)
         self.x_pos += self.SPEED
 
+
 pygame.init()
 
-new_game = Game(SCREEN_TITLE, SCREEN_WIDTH, SCREEN_HEIGHT)
-new_game.run_game_loop()
+new_game = Game('background.png', SCREEN_TITLE, SCREEN_WIDTH, SCREEN_HEIGHT)
+new_game.run_game_loop(1)
 
 # quits Pygame and the program
 pygame.quit()
