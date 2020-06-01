@@ -44,6 +44,7 @@ class Game:
         direction = 0
 
         player_character = PlayerCharacter('player.png', 375, 700, 50, 50)
+        enemy_0 = EnemyCharacter('enemy.png', 20, 400, 50, 50)
 
         # Main game loop, used to update all gameplay such as movements, checks and graphics
         # Runs until is_game_over = True
@@ -68,6 +69,8 @@ class Game:
             player_character.move(direction)
             player_character.draw(self.game_screen)
 
+            enemy_0.move(self.width)
+            enemy_0.draw(self.game_screen)
             # Update all game graphics
             pygame.display.update()
             # Tick the clock  to update everything within the game
@@ -107,7 +110,7 @@ class PlayerCharacter(GameObject):
     def __init__(self, image_path, x, y, width, height):
         super().__init__(image_path, x, y, width, height)
 
-    def move(self, direction):
+    def move(self, direction, max_height):
         """
         moves the player's character along the Y axis only
         :return:
@@ -117,6 +120,30 @@ class PlayerCharacter(GameObject):
         elif direction < 0:
             self.y_pos += self.SPEED
 
+        if self.y_pos >= max_height - 20:
+            self.y_pos = max_height - 20
+
+
+class EnemyCharacter(GameObject):
+    """
+    Draws the enemy characters
+    """
+    SPEED = 10
+
+    def __init__(self, image_path, x, y, width, height):
+        super().__init__(image_path, x, y, width, height)
+
+    def move(self, max_width):
+        """
+        moves the enemies on the X axis only and bounce back from
+        left to right once reaching end of screen
+        :return:
+        """
+        if self.x_pos <= 20:
+            self.SPEED = abs(self.SPEED)
+        elif self.x_pos >= max_width - 20:
+            self.SPEED = -abs(self.SPEED)
+        self.x_pos += self.SPEED
 
 pygame.init()
 
