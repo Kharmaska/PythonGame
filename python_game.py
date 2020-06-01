@@ -20,7 +20,7 @@ font = pygame.font.SysFont('comicsans', 75)
 
 class Game:
     """
-    Main loop of the game
+    Main class for the game
     """
     # Refresh rate to 30 frames per sec as 60 is too fast for 144hz screens
     TICK_RATE = 30
@@ -39,6 +39,7 @@ class Game:
 
         background_image = pygame.image.load(image_path)
         self.image = pygame.transform.scale(background_image, (width, height))
+
 
     def run_game_loop(self, level_speed):
         """
@@ -81,11 +82,14 @@ class Game:
                 elif event.type == pygame.KEYUP:
                     if event.key == pygame.K_UP or event.key == pygame.K_DOWN:
                         direction = 0
-                print(event)
+
 
             # Redraws the screen to a blank white window
             self.game_screen.fill(WHITE_COLOR)
             self.game_screen.blit(self.image, (0, 0))
+
+            score = font.render('Speed: ' + str(level_speed), True, WHITE_COLOR)
+            self.game_screen.blit(score, (75, 700))
 
             # Draws the treasure
             treasure.draw(self.game_screen)
